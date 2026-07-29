@@ -1,6 +1,21 @@
 import discord
+import random
+from datetime import datetime
 from store import load, reset
 from config import FINE_PER_SWEAR
+
+BIBLE_VERSES = [
+    '"Ang mabuting tao ay nagsasalita ng mabuti." — Mateo 12:35',
+    '"Ang dila ay maliit na bahagi ng katawan, ngunit napakalaki ng magagawa nito." — Santiago 3:5',
+    '"Huwag lumabas sa inyong bibig ang anumang masamang salita." — Efeso 4:29',
+    '"Ang maingat sa salita ay maingat din sa buong buhay." — Santiago 3:2',
+    '"Ang mga salitang inyong sinasabi ay magpapakita kung ano kayo." — Mateo 12:37',
+    '"Ang puso ng matuwid ay nag-iisip bago magsalita." — Kawikaan 15:28',
+    '"Ang malambot na sagot ay nagpapatahimik ng galit." — Kawikaan 15:1',
+    '"Ang Panginoon ay nagmamahal sa mga taong matuwid ang puso at dila." — Kawikaan 22:11',
+    '"Ang bawat salita mo ay dapat magbigay ng buhay, hindi kamatayan." — Kawikaan 18:21',
+    '"Magingat sa inyong mga salita, sapagkat kayo ay susukatin sa mga ito." — Mateo 12:36',
+]
 
 async def post_leaderboard(bot, channel):
     data = load()
