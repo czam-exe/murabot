@@ -28,6 +28,7 @@ async def post_leaderboard(bot, channel):
     saints = [v for v in data.values() if v["sent_message_today"] and v["daily_count"] == 0]
     total_today = sum(v["daily_count"] for v in data.values())
     today_str = datetime.now().strftime("%B %d, %Y")
+    sorted_swearers = sorted(swearers.items(), key=lambda x: -x[1]["daily_count"])
 
     # Bible verse
     verse, reference = random.choice(BIBLE_VERSES)
@@ -36,19 +37,33 @@ async def post_leaderboard(bot, channel):
 
     await channel.send(f"**Mura Daily Leaderboard — {today_str}**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
-    # Hall of Shame — one embed per swearer with profile pic
     if swearers:
         await channel.send("**HALL OF SHAME**")
-        for i, (uid, v) in enumerate(sorted(swearers.items(), key=lambda x: -x[1]["daily_count"]), 1):
-            top = max(v["daily_words"], key=v["daily_words"].get)
-            fine = v["daily_count"] * FINE_PER_SWEAR
-            shame_embed = discord.Embed(title=f"#{i} — Pinaka gago ngayong araw" if i == 1 else f"#{i}", color=discord.Color.red())
-            shame_embed.set_thumbnail(url=v["avatar_url"])
-            shame_embed.add_field(name="User", value=v["username"], inline=True)
-            shame_embed.add_field(name="Swears", value=str(v["daily_count"]), inline=True)
-            shame_embed.add_field(name="Most Used", value=f"`{top}`", inline=True)
-            shame_embed.add_field(name="Owes Jar", value=f"PHP {fine}", inline=True)
-            await channel.send(embed=shame_embed)
+
+        # #1 with profile pic
+        champ_uid, champ = sorted_swearers[0]
+        top_word = max(champ["daily_words"], key=champ["daily_words"].get)
+        shame_embed = discord.Embed(title="Pinaka gago ngayong araw", color=discord.Color.red())
+        shame_embed.set_thumbnail(url=champ["avatar_url"])
+        shame_embed.add_field(name="User", value=champ["username"], inline=True)
+        shame_embed.add_field(name="Swears", value=str(champ["daily_count"]), inline=True)
+        shame_embed.add_field(name="Most Used", value=f"`{top_word}`", inline=True)
+        shame_embed.add_field(name="Owes Jar", value=f"PHP {champ['daily_count'] * FINE_PER_SWEAR}", inline=True)
+        await channel.send(embed=shame_embed)
+
+        # Runners up #2-#4 without profile pic
+        runners_up = sorted_swearers[1:4]
+        if runners_up:
+            lines = []
+            for i, (uid, v) in enumerate(runners_up, 1):
+                top = max(v["daily_words"], key=v["daily_words"].get)
+                lines.append(f"`{i}.` **{v['username']}** — {v['daily_count']} swears | `{top}` | PHP {v['daily_count'] * FINE_PER_SWEAR}")
+            runners_embed = discord.Embed(
+                title=f"Mga alipores ni {champ['username']}",
+                description="\n".join(lines),
+                color=discord.Color.dark_red()
+            )
+            await channel.send(embed=runners_embed)
     else:
         await channel.send("Nabuhusan ng holy water ang lahat.")
 
