@@ -2,7 +2,7 @@ import discord
 from discord.ext import tasks
 from datetime import datetime
 import store
-from config import TOKEN, LEADERBOARD_CHANNEL, RESET_HOUR, RESET_MINUTE, BAD_WORDS
+from config import TOKEN, RESET_HOUR, RESET_MINUTE, BAD_WORDS
 from leaderboard import post_leaderboard
 
 intents = discord.Intents.default()
@@ -15,6 +15,12 @@ def detect_swear(text):
     for word in sorted(BAD_WORDS, key=len, reverse=True):
         if word in low:
             return word
+    return None
+
+def get_channel(guild):
+    for ch in guild.text_channels:
+        if ch.permissions_for(guild.me).send_messages:
+            return ch
     return None
 
 @bot.event
@@ -54,7 +60,7 @@ async def daily_reset():
                 v["clean_streak"] = 0
         store.save(data)
         for guild in bot.guilds:
-            ch = discord.utils.get(guild.text_channels, name=LEADERBOARD_CHANNEL)
+            ch = get_channel(guild)
             if ch:
                 await post_leaderboard(bot, ch)
 
