@@ -36,6 +36,13 @@ async def on_message(message):
     username = str(message.author)
     avatar = str(message.author.display_avatar.url)
     store.mark_active(uid, username, avatar)
+
+    if message.content == "!leaderboard":
+        ch = get_channel(message.guild)
+        if ch:
+            await post_leaderboard(bot, ch)
+        return
+
     matched = detect_swear(message.content)
     if not matched:
         return
@@ -43,7 +50,7 @@ async def on_message(message):
     prev_streak = data.get(uid, {}).get("clean_streak", 0)
     store.record_swear(uid, username, avatar, matched)
     if prev_streak >= 10:
-        await message.channel.send(f"💥 **STREAK SHATTERED!** {message.author.mention} just broke a **{prev_streak}-day clean streak** with `{matched}`. 😤")
+        await message.channel.send(f" **STREAK SHATTERED!** {message.author.mention} just broke a **{prev_streak}-day clean streak** with `{matched}`. ")
     data = store.load()
     data[uid]["clean_streak"] = 0
     store.save(data)
