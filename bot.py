@@ -1,4 +1,5 @@
 import discord
+import re
 from discord.ext import tasks
 from datetime import datetime
 import store
@@ -10,12 +11,18 @@ intents.message_content = True
 intents.members = True
 bot = discord.Client(intents=intents)
 
-def detect_swear(text):
-    low = text.lower()
+def normalize(text):
+    # collapse repeated vowels: puuutangina -> putangina, taaanga -> tanga
+    return re.sub(r'([aeiouAEIOU])\1+', r'\1', text.lower())
+
+def count_swears(text):
+    normalized = normalize(text)
+    counts = {}
     for word in sorted(BAD_WORDS, key=len, reverse=True):
-        if word in low:
-            return word
-    return None
+        count = normalized.count(word)
+        if count > 0:
+            counts[word] = count
+    return counts
 
 def get_channel(guild):
     for ch in guild.text_channels:
@@ -43,14 +50,21 @@ async def on_message(message):
             await post_leaderboard(bot, ch)
         return
 
-    matched = detect_swear(message.content)
-    if not matched:
+    swear_counts = count_swears(message.content)
+    if not swear_counts:
         return
+
     data = store.load()
     prev_streak = data.get(uid, {}).get("clean_streak", 0)
-    store.record_swear(uid, username, avatar, matched)
+
+    for word, count in swear_counts.items():
+        for _ in range(count):
+            store.record_swear(uid, username, avatar, word)
+
     if prev_streak >= 10:
-        await message.channel.send(f" **STREAK SHATTERED!** {message.author.mention} just broke a **{prev_streak}-day clean streak** with `{matched}`. ")
+        top = max(swear_counts, key=swear_counts.get)
+        await message.channel.send(f"STREAK SHATTERED! {message.author.mention} just broke a **{prev_streak}-day clean streak** with `{top}`.")
+
     data = store.load()
     data[uid]["clean_streak"] = 0
     store.save(data)
