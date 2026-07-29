@@ -3,7 +3,7 @@ import re
 from discord.ext import tasks
 from datetime import datetime
 import store
-from config import TOKEN, RESET_HOUR, RESET_MINUTE, BAD_WORDS
+from config import TOKEN, RESET_HOUR, RESET_MINUTE, BAD_WORDS, FINE_PER_SWEAR
 from leaderboard import post_leaderboard
 
 intents = discord.Intents.default()
@@ -12,7 +12,6 @@ intents.members = True
 bot = discord.Client(intents=intents)
 
 def normalize(text):
-    # collapse repeated vowels: puuutangina -> putangina, taaanga -> tanga
     return re.sub(r'([aeiouAEIOU])\1+', r'\1', text.lower())
 
 def count_swears(text):
@@ -48,6 +47,22 @@ async def on_message(message):
         ch = get_channel(message.guild)
         if ch:
             await post_leaderboard(bot, ch)
+        return
+
+    if message.content == "!profile":
+        data = store.load()
+        entry = data.get(uid)
+        embed = discord.Embed(title=f"{username}'s Profile", color=discord.Color.blurple())
+        embed.set_thumbnail(url=avatar)
+        if entry:
+            top_word = max(entry["daily_words"], key=entry["daily_words"].get) if entry["daily_words"] else "Wala"
+            embed.add_field(name="Total Swears", value=str(entry["total_count"]), inline=True)
+            embed.add_field(name="Total Owed", value=f"PHP {entry['total_count'] * FINE_PER_SWEAR}", inline=True)
+            embed.add_field(name="Clean Streak", value=f"{entry['clean_streak']} days", inline=True)
+            embed.add_field(name="Most Used Word", value=f"`{top_word}`", inline=True)
+        else:
+            embed.description = "Wala pang record. Malinis ka pa!"
+        await message.channel.send(embed=embed)
         return
 
     swear_counts = count_swears(message.content)
