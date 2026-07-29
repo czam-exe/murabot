@@ -29,6 +29,14 @@ def get_channel(guild):
             return ch
     return None
 
+def get_server_most_used():
+    data = store.load()
+    totals = {}
+    for v in data.values():
+        for word, count in v["daily_words"].items():
+            totals[word] = totals.get(word, 0) + count
+    return max(totals, key=totals.get) if totals else None
+
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
@@ -52,6 +60,7 @@ async def on_message(message):
     if message.content == "!profile":
         data = store.load()
         entry = data.get(uid)
+        server_top = get_server_most_used()
         embed = discord.Embed(title=f"{username}'s Profile", color=discord.Color.blurple())
         embed.set_thumbnail(url=avatar)
         if entry:
@@ -62,6 +71,8 @@ async def on_message(message):
             embed.add_field(name="Most Used Word", value=f"`{top_word}`", inline=True)
         else:
             embed.description = "Wala pang record. Malinis ka pa!"
+        if server_top:
+            embed.add_field(name="Server Most Used Word Today", value=f"`{server_top}`", inline=True)
         await message.channel.send(embed=embed)
         return
 
