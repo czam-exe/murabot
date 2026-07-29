@@ -16,5 +16,6 @@ BAD_WORDS = [
     "tarantado", "rantado",
     "gago", "tanga", "bobo", "tado",
     "8080", "pakyu",
-    "fuck", "shit", "bitch", "asshole", "damn", "hell"
+    "fuck", "shit", "bitch", "asshole", "damn", "hell",
+    "hayop", "haup"
 ]
