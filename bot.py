@@ -12,7 +12,12 @@ intents.members = True
 bot = discord.Client(intents=intents)
 
 def normalize(text):
-    return re.sub(r'([aeiouAEIOU])\1+', r'\1', text.lower())
+    text = text.lower()
+    # Number to letter substitution
+    text = text.replace('4', 'a').replace('3', 'e').replace('0', 'o').replace('1', 'i').replace('5', 's').replace('@', 'a')
+    # Collapse repeated vowels
+    text = re.sub(r'([aeiou])\1+', r'\1', text)
+    return text
 
 def count_swears(text):
     normalized = normalize(text)

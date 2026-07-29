@@ -6,10 +6,15 @@ RESET_MINUTE = 59
 FINE_PER_SWEAR = 50
 
 BAD_WORDS = [
-    "tangina mo", "potangina mo", "putangina mo",
-    "tangina", "putangina", "potangina",
-    "pota", "kingina", "ampota",
-    "taina", "taena",
-    "tarantado", "tado", "bobo",
-    "gago", "tanga", "8080"
+    # Multi-word first (longest match priority)
+    "putangina mo", "potangina mo", "tangina mo", "fuck you",
+    "mamatay ka na",
+    # Single words
+    "putangina", "potangina", "tangina",
+    "ampota", "kingina", "pota",
+    "taena", "taina",
+    "tarantado", "rantado",
+    "gago", "tanga", "bobo", "tado",
+    "8080", "pakyu",
+    "fuck", "shit", "bitch", "asshole", "damn", "hell"
 ]
